@@ -422,26 +422,28 @@ impl StarknetApiServer for StarknetApi {
     ) -> Result<Vec<FeeEstimate>, Error> {
         let chain_id = FieldElement::from_hex_be(&self.sequencer.chain_id().as_hex())
             .map_err(|_| StarknetApiError::UnexpectedError)?;
-
         let transactions = request
             .into_iter()
             .map(|tx| {
                 let tx = match tx {
                     BroadcastedTx::Invoke(tx) => {
+                        let is_query = tx.is_query();
                         let tx = tx.into_tx_with_chain_id(chain_id);
-                        ExecutableTxWithHash::new_query(ExecutableTx::Invoke(tx))
+                        ExecutableTxWithHash::new_query(ExecutableTx::Invoke(tx), is_query)
                     }
 
                     BroadcastedTx::DeployAccount(tx) => {
+                        let is_query = tx.is_query();
                         let tx = tx.into_tx_with_chain_id(chain_id);
-                        ExecutableTxWithHash::new_query(ExecutableTx::DeployAccount(tx))
+                        ExecutableTxWithHash::new_query(ExecutableTx::DeployAccount(tx), is_query)
                     }
 
                     BroadcastedTx::Declare(tx) => {
+                        let is_query = tx.is_query();
                         let tx = tx
                             .try_into_tx_with_chain_id(chain_id)
                             .map_err(|_| StarknetApiError::InvalidContractClass)?;
-                        ExecutableTxWithHash::new_query(ExecutableTx::Declare(tx))
+                        ExecutableTxWithHash::new_query(ExecutableTx::Declare(tx), is_query)
                     }
                 };
 
