@@ -37,6 +37,10 @@ impl BroadcastedInvokeTx {
             max_fee: self.0.max_fee.try_into().expect("max_fee is too big"),
         }
     }
+
+    pub fn is_query(&self) -> bool {
+        self.0.is_query
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Deref)]
@@ -132,6 +136,10 @@ impl BroadcastedDeployAccountTx {
             contract_address_salt: self.0.contract_address_salt,
             max_fee: self.0.max_fee.try_into().expect("max_fee is too big"),
         }
+    }
+
+    pub fn is_query(&self) -> bool {
+        self.0.is_query
     }
 }
 
