@@ -15,8 +15,9 @@ katana-provider = { path = "../storage/provider" }
 anyhow.workspace = true
 async-trait.workspace = true
 blockifier.workspace = true
-cairo-lang-casm = "2.3.1"
-cairo-lang-starknet = "2.3.1"
+cairo-lang-casm = "2.6.3"
+cairo-lang-starknet = "2.6.3"
+cairo-lang-starknet-classes = "2.6.3"
 cairo-vm.workspace = true
 convert_case.workspace = true
 ethers = "2.0.11"

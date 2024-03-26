@@ -1,10 +1,12 @@
 use anyhow::Result;
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
-use cairo_lang_starknet::contract_class::ContractClass;
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::contract_class::ContractClass;
 
 use crate::contract::{
     CompiledContractClass, CompiledContractClassV0, CompiledContractClassV1, SierraClass,
 };
+
+const MAX_BYTECODE_SIZE: usize = 180000;
 
 /// Parse a [`str`] into a [`CompiledContractClass`].
 pub fn parse_compiled_class(class: &str) -> Result<CompiledContractClass> {
@@ -18,7 +20,7 @@ pub fn parse_compiled_class(class: &str) -> Result<CompiledContractClass> {
 /// Parse a [`str`] into a [`CompiledContractClassV1`].
 pub fn parse_compiled_class_v1(class: &str) -> Result<CompiledContractClassV1> {
     let class: ContractClass = serde_json::from_str(class)?;
-    let class = CasmContractClass::from_contract_class(class, true)?;
+    let class = CasmContractClass::from_contract_class(class, true, MAX_BYTECODE_SIZE)?;
     Ok(CompiledContractClassV1::try_from(class)?)
 }
 

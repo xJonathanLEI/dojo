@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Result};
 use blockifier::execution::contract_class::ContractClassV0;
-use cairo_lang_starknet::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
 use cairo_vm::felt::Felt252;
 use cairo_vm::serde::deserialize_program::{
     serialize_program_data, ApTracking, OffsetValue, ProgramJson, ValueAddress,
@@ -41,6 +41,8 @@ mod primitives {
 
 use cairo_vm::serde::deserialize_program::{Attribute, BuiltinName, DebugInfo, HintParams, Member};
 use cairo_vm::types::relocatable::MaybeRelocatable;
+
+const MAX_BYTECODE_SIZE: usize = 180000;
 
 /// Converts the legacy inner compiled class type [CompiledContractClassV0] into its RPC equivalent
 /// [`ContractClass`].
@@ -93,7 +95,8 @@ pub fn flattened_sierra_to_compiled_class(
     let class_hash = contract_class.class_hash();
 
     let contract_class = rpc_to_cairo_contract_class(contract_class)?;
-    let casm_contract = CasmContractClass::from_contract_class(contract_class, true)?;
+    let casm_contract =
+        CasmContractClass::from_contract_class(contract_class, true, MAX_BYTECODE_SIZE)?;
 
     // compute compiled class hash
     let res = serde_json::to_string(&casm_contract)?;
@@ -111,7 +114,7 @@ pub fn compiled_class_hash_from_flattened_sierra_class(
     contract_class: &FlattenedSierraClass,
 ) -> Result<FieldElement> {
     let contract_class = rpc_to_cairo_contract_class(contract_class)?;
-    let casm = CasmContractClass::from_contract_class(contract_class, true)?;
+    let casm = CasmContractClass::from_contract_class(contract_class, true, MAX_BYTECODE_SIZE)?;
     let compiled_class: CompiledClass = serde_json::from_str(&serde_json::to_string(&casm)?)?;
     Ok(compiled_class.class_hash()?)
 }
@@ -182,10 +185,10 @@ pub fn legacy_rpc_to_inner_compiled_class(
 /// [ContractClass](cairo_lang_starknet::contract_class::ContractClass) type.
 fn rpc_to_cairo_contract_class(
     contract_class: &FlattenedSierraClass,
-) -> Result<cairo_lang_starknet::contract_class::ContractClass, std::io::Error> {
+) -> Result<cairo_lang_starknet_classes::contract_class::ContractClass, std::io::Error> {
     let value = serde_json::to_value(contract_class)?;
 
-    Ok(cairo_lang_starknet::contract_class::ContractClass {
+    Ok(cairo_lang_starknet_classes::contract_class::ContractClass {
         abi: serde_json::from_value(value["abi"].clone()).ok(),
         sierra_program: serde_json::from_value(value["sierra_program"].clone())?,
         entry_points_by_type: serde_json::from_value(value["entry_points_by_type"].clone())?,

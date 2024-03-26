@@ -11,8 +11,10 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use base64::prelude::*;
-use cairo_lang_starknet::casm_contract_class::{CasmContractClass, StarknetSierraCompilationError};
-use cairo_lang_starknet::contract_class::ContractClass;
+use cairo_lang_starknet_classes::casm_contract_class::{
+    CasmContractClass, StarknetSierraCompilationError,
+};
+use cairo_lang_starknet_classes::contract_class::ContractClass;
 use cairo_vm::types::errors::program_errors::ProgramError;
 use ethers::types::U256;
 use rayon::prelude::*;
@@ -45,6 +47,8 @@ use crate::genesis::GenesisClass;
 use crate::FieldElement;
 
 type Object = Map<String, Value>;
+
+const MAX_BYTECODE_SIZE: usize = 180000;
 
 /// Represents the path to the class artifact or the full JSON artifact itself.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, derive_more::From)]
@@ -283,7 +287,8 @@ impl TryFrom<GenesisJson> for Genesis {
                 let (class_hash, compiled_class_hash, sierra, casm) = match sierra {
                     Ok(sierra) => {
                         let casm: ContractClass = serde_json::from_value(artifact)?;
-                        let casm = CasmContractClass::from_contract_class(casm, true)?;
+                        let casm =
+                            CasmContractClass::from_contract_class(casm, true, MAX_BYTECODE_SIZE)?;
 
                         // check if the class hash is provided, otherwise compute it from the
                         // artifacts
